@@ -1,0 +1,13 @@
+{
+  "name": "hello-world",
+  "owner": {
+    "name": "skogix"
+  },
+  "plugins": [
+    {
+      "name": "hello-world",
+      "source": "./",
+      "description": "Demonstration plugin showcasing Claude Code extensibility features through a simple greeting theme"
+    }
+  ]
+}

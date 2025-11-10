@@ -1,0 +1,18 @@
+{
+  "name": "skogai",
+  "owner": {
+    "name": "skogix"
+  },
+  "plugins": [
+    {
+      "name": "skogai-builder",
+      "source": "./skogai-builder",
+      "description": "Build Claude Code components (skills, agents, hooks, commands, plugins, output styles)"
+    },
+    {
+      "name": "hello-world",
+      "source": "./hello-world",
+      "description": "A hello world-project created by skogai-builder for demonstration purposes"
+    }
+  ]
+}

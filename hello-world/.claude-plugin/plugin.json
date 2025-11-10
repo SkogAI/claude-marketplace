@@ -1,0 +1,11 @@
+{
+  "name": "hello-world",
+  "version": "1.0.0",
+  "description": "Demonstration plugin showcasing Claude Code extensibility features through a simple greeting theme",
+  "author": {
+    "name": "skogix",
+    "url": "https://github.com/skogix"
+  },
+  "repository": "https://github.com/skogix",
+  "license": "MIT"
+}

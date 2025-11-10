@@ -1,0 +1,13 @@
+{
+  "name": "skogai-builder",
+  "owner": {
+    "name": "skogix"
+  },
+  "plugins": [
+    {
+      "name": "skogai-builder",
+      "source": "./",
+      "description": "build things"
+    }
+  ]
+}
