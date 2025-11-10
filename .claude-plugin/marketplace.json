@@ -3,6 +3,9 @@
   "owner": {
     "name": "skogix"
   },
+  "metadata": {
+    "description": "A marketplace for building and extending Claude Code with custom components including skills, agents, hooks, commands, plugins, and output styles"
+  },
   "plugins": [
     {
       "name": "skogai-builder",

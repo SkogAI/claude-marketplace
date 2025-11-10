@@ -3,6 +3,9 @@
   "owner": {
     "name": "skogix"
   },
+  "metadata": {
+    "description": "Powerful toolkit for creating and managing Claude Code extensions including skills, agents, hooks, slash commands, plugins, output styles, and CLAUDE.md files"
+  },
   "plugins": [
     {
       "name": "skogai-builder",

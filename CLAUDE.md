@@ -8,99 +8,53 @@
 ```
 skogai/                           # Marketplace root
 ├── .claude-plugin/
-│   └── marketplace.json          # Lists all plugins
-├── <plugin-name>/                # Individual plugins
-│   ├── .claude-plugin/
-│   │   └── plugin.json           # Plugin metadata
-│   ├── commands/                 # Slash commands (optional)
-│   ├── skills/                   # Skills (optional)
-│   ├── agents/                   # Agents (optional)
-│   └── README.md                 # Plugin documentation
-└── CLAUDE.md                     # This file
+│   └── marketplace.json          # Lists all plugins in marketplace
+├── CLAUDE.md                     # Development guide (this file)
+├── README.md                     # Marketplace overview
+└── <plugin-name>/                # Individual plugin directory
+    ├── .claude-plugin/           # Plugin definition (required)
+    │   ├── plugin.json           # Plugin metadata (required)
+    │   └── marketplace.json      # Optional: Plugin can also be a marketplace
+    ├── agents/                   # Subagents (optional)
+    ├── commands/                 # Slash commands (optional)
+    ├── hooks/                    # Lifecycle hooks (optional)
+    ├── output-styles/            # Output formatters (optional)
+    ├── CLAUDE.md                 # Plugin-specific development docs
+    ├── README.md                 # Plugin documentation
+    ├── settings.json             # Plugin settings/preferences
+    └── SKOGIX.md                 # User-writable notes (gitignored)
 ```
 
 **Current Plugins:**
 - `skogai-builder` — Build Claude Code components (skills, agents, hooks, commands, plugins, output styles)
+- `hello-world` — Demo plugin created with skogai-builder showcasing all component types (commands, agents, hooks, output-styles, skills)
 
----
+## Understanding Claude Code Plugin Structure
 
-## Setup & Development
+### Plugin Structure vs Project Structure
 
-### Local Testing
-```bash
-cd /home/skogix/plugins/skogai
-/plugin marketplace add .
-/plugin install <plugin-name>@skogai
+**IMPORTANT:** Plugins have a different structure from project customizations!
+
+**Plugins** (for distribution):
+```
+my-plugin/
+├── .claude-plugin/
+│   ├── plugin.json          # Plugin metadata ONLY
+│   └── marketplace.json     # Marketplace manifest (for marketplace root)
+├── commands/                 # ← At PLUGIN ROOT (not .claude/commands/)
+├── agents/                   # ← At PLUGIN ROOT (not .claude/agents/)
+├── hooks/                    # ← At PLUGIN ROOT (not .claude/hooks/)
+├── output-styles/            # ← At PLUGIN ROOT (not .claude/output-styles/)
+├── settings.json             # ← At PLUGIN ROOT (defines plugin hooks)
+└── README.md
 ```
 
-### GitHub Distribution
-```bash
-# Users install with:
-/plugin marketplace add skogix/skogai
-/plugin install <plugin-name>@skogai
+**Project/User Customizations** (NOT plugins):
+```
+./.claude/                    # ← Project level
+~/.claude/                    # ← User level
 ```
 
-**No build step required** — changes merged to `main` are immediately available.
-
----
-
-## Adding a New Plugin
-
-### 1. Create Plugin Directory
-```bash
-mkdir -p skogai/my-plugin/.claude-plugin
-cd skogai/my-plugin
-```
-
-### 2. Create plugin.json
-```json
-{
-  "name": "my-plugin",
-  "version": "1.0.0",
-  "description": "Clear one-line description",
-  "author": {
-    "name": "skogix",
-    "url": "https://github.com/skogix"
-  },
-  "repository": "https://github.com/skogix/skogai",
-  "license": "MIT"
-}
-```
-
-**Critical:** `repository` must be a string URL, not an object.
-
-### 3. Add Plugin Content
-
-Create subdirectories as needed:
-- `commands/` — Slash commands (`.md` files with YAML frontmatter)
-- `skills/` — Agent skills (directories with `SKILL.md`)
-- `agents/` — Subagents (`.md` files with YAML frontmatter)
-
-### 4. Update Marketplace Manifest
-
-Edit `skogai/.claude-plugin/marketplace.json`:
-```json
-{
-  "name": "skogai",
-  "owner": {"name": "skogix"},
-  "plugins": [
-    {
-      "name": "my-plugin",
-      "source": "./my-plugin",
-      "description": "Clear description matching plugin.json"
-    }
-  ]
-}
-```
-
-### 5. Test Locally
-```bash
-/plugin marketplace update skogai
-/plugin install my-plugin@skogai
-/help  # Verify commands appear
-```
-
----
 
 ## Naming Conventions
 
@@ -119,83 +73,7 @@ Edit `skogai/.claude-plugin/marketplace.json`:
 - Descriptions (plugin.json): ~80 characters
 - Skill descriptions (YAML): max 1024 characters
 
----
-
-## Slash Command Format
-
-All commands are Markdown files with YAML frontmatter:
-
-```markdown
----
-description: What this command does (required, shown in /help)
-argument-hint: [arg1] [arg2] (optional, shown in autocomplete)
-allowed-tools: Bash(mkdir:*), Write (optional, restrict tool access)
----
-
-## Purpose
-High-level explanation of what this command achieves.
-
-## Contract
-**Inputs:**
-- `$1` — First argument description
-- `$2` — Second argument (optional)
-
-**Outputs:**
-- `STATUS=<OK|FAIL>`
-- `ERROR=<message>` (if FAIL)
-- `PATH=<created-file>` (if applicable)
-
-## Instructions
-1. Validate inputs
-2. Perform main operation
-3. Output status
-
-## Examples
-```bash
-/my-command arg1 arg2
-# Expected: STATUS=OK PATH=./output.txt
-```
-```
-
-**Required:**
-- All commands must output final status: `STATUS=OK|FAIL`
-- Include `ERROR=message` on failure
-- Validate inputs before processing
-- Be idempotent (safe to run multiple times)
-
----
-
-## Code Style & Quality
-
-### Command Design Patterns
-
-1. **Contract-First Design**
-   - Document inputs/outputs explicitly
-   - Make commands composable and testable
-   - Fail fast with clear error messages
-
-2. **Input Validation**
-   ```bash
-   # Example: Validate skill name
-   if [[ ! "$NAME" =~ ^[a-z0-9-]+$ ]] || [[ ${#NAME} -gt 64 ]]; then
-     echo "ERROR=Invalid name format"
-     echo "STATUS=FAIL"
-     exit 1
-   fi
-   ```
-
-3. **Intelligent Defaults**
-   - Analyze inputs to determine appropriate structure
-   - Example: Detect if skill needs `scripts/`, `references/`, `assets/`
-   - Progressive disclosure: Only create what's needed
-
-4. **Progressive Disclosure**
-   - Metadata (100 words) always in context
-   - Main content (SKILL.md) loaded when triggered
-   - Resources loaded on-demand
-   - Keep files under 5k words
-
-### Documentation Standards
+## Documentation Standards
 
 **README.md (required per plugin):**
 - Installation instructions
@@ -212,156 +90,36 @@ High-level explanation of what this command achieves.
 - Document edge cases
 - Reference Claude Code docs where applicable
 
----
-
-## Safety & Security
-
-### Never Commit Secrets
-- No API keys, tokens, or credentials in any files
-- Use `.env.example` for environment variable templates
-- Add `.env`, `*.key`, `*.pem` to `.gitignore`
-
-### Input Validation
-- Validate all user inputs before processing
-- Sanitize paths to prevent directory traversal
-- Check file existence before operations
-- Validate against allowed character sets
-
-### File Operations
-- Check if files exist before overwriting
-- Create parent directories with `mkdir -p`
-- Use absolute paths when possible
-- Provide clear error messages on failure
-
-### Tool Restrictions
-```yaml
-allowed-tools: Bash(mkdir:*), Bash(touch:*), Write
-```
-Only allow necessary tools to minimize risk.
-
----
-
 ## Testing & Release Checklist
 
 ### Before Creating a Plugin
 
-- [ ] Plugin name follows kebab-case convention
-- [ ] `plugin.json` has all required fields
-- [ ] `repository` field is a string URL, not object
-- [ ] Version follows semantic versioning (1.0.0)
-- [ ] Description is clear and concise (~80 chars)
-- [ ] LICENSE file present (MIT recommended)
-- [ ] README.md documents all commands/features
-- [ ] All commands have YAML frontmatter with `description`
-- [ ] All commands output `STATUS=OK|FAIL`
-- [ ] Input validation implemented
-- [ ] Commands tested locally with various inputs
-- [ ] Error cases handled gracefully
-- [ ] No secrets or credentials in files
+@docs/checklists/plugin.list
 
 ### Before Publishing to Marketplace
 
-- [ ] Added plugin to marketplace.json
-- [ ] Description in marketplace.json matches plugin.json
-- [ ] Tested local installation (`/plugin marketplace add .`)
-- [ ] Tested command execution
-- [ ] Verified `/help` shows commands correctly
-- [ ] Updated root README.md if needed
-- [ ] Git repository clean (no uncommitted changes)
-- [ ] Ready to merge to `main` branch
-
----
-
-## Workflow Examples
-
-### Adding a Command to Existing Plugin
-
-```bash
-cd skogai/skogai-builder/commands
-# Create my-command.md with proper structure
-# Test locally
-/plugin marketplace update skogai
-/plugin install skogai-builder@skogai
-/skogai-builder:my-command
-```
-
-### Creating a New Plugin
-
-```bash
-cd skogai
-mkdir -p my-plugin/.claude-plugin/commands
-cd my-plugin
-
-# Create plugin.json
-cat > .claude-plugin/plugin.json << 'EOF'
-{
-  "name": "my-plugin",
-  "version": "1.0.0",
-  "description": "My awesome plugin",
-  "author": {"name": "skogix", "url": "https://github.com/skogix"},
-  "repository": "https://github.com/skogix/skogai",
-  "license": "MIT"
-}
-EOF
-
-# Create commands/my-command.md
-# ... add command content ...
-
-# Update marketplace.json
-# Test installation
-/plugin marketplace update skogai
-/plugin install my-plugin@skogai
-```
-
----
-
-## Distribution Model
-
-**Zero-Build, Git-Native:**
-1. Develop plugin locally
-2. Test with `/plugin marketplace add .`
-3. Commit to repository
-4. Merge to `main` branch
-5. Users get updates with `/plugin marketplace update skogai`
-
-**No separate publish step** — GitHub is the source of truth.
-
----
+@docs/checklists/marketplace.list
 
 ## References
 
-- Claude Code Documentation: https://code.claude.com/docs
-- Plugin Development: https://code.claude.com/docs/en/plugins.md
-- Marketplace Guide: https://code.claude.com/docs/en/plugin-marketplaces.md
-- Command Format: https://code.claude.com/docs/en/slash-commands.md
-- Skills Guide: https://code.claude.com/docs/en/skills.md
+- The `/docs` command
 
----
+## Common Mistakes to Avoid
 
-## Quick Reference
+❌ **DO NOT** put plugin files in `.claude/` subdirectories:
+- `.claude/commands/` - WRONG for plugins
+- `.claude/agents/` - WRONG for plugins
+- `.claude/settings.json` - WRONG for plugins
 
-### File Paths
-- Personal: `~/.claude/{skills,agents,commands}/`
-- Project: `.claude/{skills,agents,commands}/`
-- Always use forward slashes in documentation
+✅ **DO** put plugin files at the plugin root:
+- `commands/` - CORRECT
+- `agents/` - CORRECT
+- `settings.json` - CORRECT
 
-### Common Commands
-```bash
-/plugin marketplace add .           # Add local marketplace
-/plugin marketplace add owner/repo  # Add GitHub marketplace
-/plugin install name@marketplace    # Install plugin
-/plugin marketplace update name     # Update marketplace
-/plugin uninstall name              # Remove plugin
-/help                               # List available commands
-```
+❌ **DO NOT** use `$CLAUDE_PROJECT_DIR` in plugin hooks
 
-### Status Output Format
-```bash
-STATUS=OK PATH=/path/to/file
-STATUS=FAIL ERROR=Descriptive error message
-STATUS=EXISTS PATH=/existing/file
-```
+✅ **DO** use `${CLAUDE_PLUGIN_ROOT}` in plugin hooks
 
----
+## Important files and folders
 
-**License:** MIT | **Maintainer:** skogix | **Repository:** https://github.com/skogix/skogai
+- @docs/ - the general documentation for meta information (not included in the actual plugins)

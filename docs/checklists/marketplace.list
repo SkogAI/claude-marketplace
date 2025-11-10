@@ -1,0 +1,8 @@
+- [ ] Added plugin to marketplace.json
+- [ ] Description in marketplace.json matches plugin.json
+- [ ] Tested local installation (`/plugin marketplace add .`)
+- [ ] Tested command execution
+- [ ] Verified `/help` shows commands correctly
+- [ ] Updated root README.md if needed
+- [ ] Git repository clean (no uncommitted changes)
+- [ ] Ready to merge to `main` branch
