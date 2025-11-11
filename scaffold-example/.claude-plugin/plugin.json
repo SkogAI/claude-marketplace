@@ -1,0 +1,8 @@
+{
+  "name": "scaffold-example",
+  "version": "0.1.0",
+  "description": "A basic plugin scaffold example",
+  "author": {
+    "name": "skogix"
+  }
+}
